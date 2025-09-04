@@ -45,3 +45,26 @@ src/
 ├─ App.jsx
 ├─ index.jsx
 └─ styles.css
+
+
+## Setup & Run
+
+/*1. Clone the repository:*/
+
+
+   git clone https://github.com/JayGemawat/demo-auth-app.git
+   cd demo-auth-app
+
+/*2. Install dependencies:*/
+
+   npm install
+
+/*3. Start development server:(for local server)*/
+
+   npm start
+
+
+
+/*4. Deployment*/
+
+The project can be deployed easily on free hosting services like Vercel, Netlify, or Render.
