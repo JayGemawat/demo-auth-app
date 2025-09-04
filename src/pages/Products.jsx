@@ -1,11 +1,9 @@
 // src/pages/Products.jsx
-import { useContext } from "react";
-import { DataContext } from "../context/DataContext";
-import { AuthContext } from "../context/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function Products() {
-  const { products } = useContext(DataContext);
-  const { role } = useContext(AuthContext);
+  const products = useSelector((state) => state.data.products);
+  const role = useSelector((state) => state.auth.role);
 
   const exportCSV = () => {
     const rows = [

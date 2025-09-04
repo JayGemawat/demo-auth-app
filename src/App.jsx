@@ -1,7 +1,6 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "./context/AuthContext";
+import { useSelector } from "react-redux";
 
 import AuthPage from "./pages/AuthPage"; // Combined login/register/forgot page
 import ResetPassword from "./pages/ResetPassword"; // optional, for OTP reset
@@ -10,19 +9,22 @@ import Categories from "./pages/Categories";
 import Products from "./pages/Products";
 import ChangePassword from "./pages/ChangePassword";
 import Layout from "./components/Layout";
+import "./styles.css"; 
 
+// Protected route for logged-in users
 function ProtectedRoute({ children }) {
-  const { token } = useContext(AuthContext);
+  const { token } = useSelector((state) => state.auth);
   return token ? children : <Navigate to="/auth" />;
 }
 
+// Admin-only route
 function AdminRoute({ children }) {
-  const { token, role } = useContext(AuthContext);
+  const { token, role } = useSelector((state) => state.auth);
   return token && role === "Admin" ? children : <Navigate to="/dashboard" />;
 }
 
 export default function App() {
-  const { token } = useContext(AuthContext);
+  const { token } = useSelector((state) => state.auth);
 
   return (
     <Router>

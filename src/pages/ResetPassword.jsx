@@ -1,36 +1,69 @@
-// src/pages/ResetPassword.jsx
-import { useState, useContext, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
+import { resetPasswordAsync } from "../redux/authSlice";
 
 export default function ResetPassword() {
-  const { verifyOtp, resetPassword, requestOtp } = useContext(AuthContext);
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const email = params.get("email") || "";
   const [otp, setOtp] = useState("");
   const [newPass, setNewPass] = useState("");
 
+  const verifyOtp = (email, otp) => {
+    try {
+      const store = JSON.parse(localStorage.getItem("otpStore") || "{}");
+      if (!store[email]) return false;
+      const { code, expiresAt } = store[email];
+      if (Date.now() > expiresAt) return false;
+      return code === otp;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = useCallback(
-    async (e) => {
+    (e) => {
       e.preventDefault();
-      if (!otp || !newPass) return;
+      if (!otp || !newPass) {
+        Swal.fire({ icon: "error", title: "All fields required" });
+        return;
+      }
+
       const valid = verifyOtp(email, otp);
       if (!valid) {
         Swal.fire({ icon: "error", title: "Invalid or expired OTP" });
         return;
       }
-      const ok = await resetPassword(email, newPass);
-      if (ok) navigate("/login");
+
+      dispatch(resetPasswordAsync({ email, newPassword: newPass }));
+
+      Swal.fire({ icon: "success", title: "Password reset successfully" });
+      navigate("/auth");
     },
-    [otp, newPass, email, verifyOtp, resetPassword, navigate]
+    [otp, newPass, email, dispatch, navigate]
   );
 
   const handleResend = useCallback(() => {
-    if (email) requestOtp(email);
-  }, [email, requestOtp]);
+    if (!email) {
+      Swal.fire({ icon: "error", title: "Email missing" });
+      return;
+    }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const store = JSON.parse(localStorage.getItem("otpStore") || "{}");
+    store[email] = { code, expiresAt: Date.now() + 10 * 60 * 1000 };
+    localStorage.setItem("otpStore", JSON.stringify(store));
+
+    Swal.fire({
+      icon: "info",
+      title: "OTP Resent",
+      text: `Your OTP is ${code}`,
+    });
+  }, [email]);
 
   return (
     <div className="login-container">

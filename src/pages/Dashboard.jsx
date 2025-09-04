@@ -1,10 +1,9 @@
 // src/pages/Dashboard.jsx
 import { Link } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function Dashboard() {
-  const { role } = useContext(AuthContext);
+  const role = useSelector((state) => state.auth.role);
 
   return (
     <div className="content">

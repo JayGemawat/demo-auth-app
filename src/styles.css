@@ -1,6 +1,7 @@
 /* ================================
    Global Variables & Resets
    ================================ */
+
 :root{
   --bg: #ffffff;
   --bg-muted:#f5f6fa;
@@ -426,4 +427,36 @@ tbody tr:hover{ background: #eaf3ff; }
   cursor: pointer;
   font-weight: 500;
   padding: 0;
+}
+
+/* ================================
+   Desktop Collapsed Sidebar
+   ================================ */
+@media (min-width: 769px) {
+  .sidebar {
+    width: 0px; /* collapsed width by default */
+    transition: width 0.3s;
+  }
+
+  .sidebar.open {
+    width: 220px; /* expanded width */
+  }
+
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar li {
+    margin: 16px 0;
+  }
+
+  /* Optional: hide text when collapsed */
+  .sidebar.collapsed ul li a {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
 }

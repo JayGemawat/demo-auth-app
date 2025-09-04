@@ -1,14 +1,19 @@
 // src/pages/Categories.jsx
-import { useContext, useState } from "react";
-import { DataContext } from "../context/DataContext";
-import ProductModal from "../components/ProductModal";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
+import ProductModal from "../components/ProductModal";
+import {
+  addCategory as addCategoryAction,
+  removeCategory as removeCategoryAction,
+} from "../redux/dataSlice";
 
 export default function Categories() {
-  const { categories, addProduct, setCategories } = useContext(DataContext);
+  const dispatch = useDispatch();
+  const categories = useSelector((state) => state.data.categories);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Add a new category using SweetAlert input
+  // Add a new category
   const handleAddCategory = async () => {
     const { value: name } = await Swal.fire({
       title: "Add New Category",
@@ -20,19 +25,19 @@ export default function Categories() {
       cancelButtonText: "Cancel",
       inputValidator: (value) => {
         if (!value.trim()) return "Category name cannot be empty";
-        if (categories.some((c) => c.name.toLowerCase() === value.trim().toLowerCase()))
+        if (
+          categories.some(
+            (c) => c.name.toLowerCase() === value.trim().toLowerCase()
+          )
+        )
           return "Category already exists";
         return null;
       },
     });
 
     if (name) {
-      const newCat = {
-        id: Date.now(),
-        name: name.trim(),
-        productCount: 0,
-      };
-      setCategories([...categories, newCat]);
+      const newCat = { id: Date.now(), name: name.trim(), productCount: 0 };
+      dispatch(addCategoryAction(newCat));
       Swal.fire({
         icon: "success",
         title: "Category added!",
@@ -52,7 +57,7 @@ export default function Categories() {
       cancelButtonText: "Cancel",
     });
     if (result.isConfirmed) {
-      setCategories(categories.filter((c) => c.id !== cat.id));
+      dispatch(removeCategoryAction(cat.id));
       Swal.fire({
         icon: "success",
         title: "Deleted!",
@@ -66,14 +71,12 @@ export default function Categories() {
     <div className="categories">
       <h1>Manage Categories</h1>
 
-      {/* Add New Category Button */}
       <div style={{ marginBottom: "20px" }}>
         <button className="btn-primary" onClick={handleAddCategory}>
           + Add New Category
         </button>
       </div>
 
-      {/* Category List */}
       <div className="category-list">
         {categories.map((cat) => (
           <div key={cat.id} className="category-card">
@@ -97,12 +100,11 @@ export default function Categories() {
         ))}
       </div>
 
-      {/* Product Modal */}
+      {/* Product Modal now uses Redux directly, no onSave prop */}
       {selectedCategory && (
         <ProductModal
           category={selectedCategory}
           onClose={() => setSelectedCategory(null)}
-          onSave={addProduct}
         />
       )}
     </div>

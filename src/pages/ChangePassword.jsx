@@ -1,26 +1,34 @@
-// src/pages/ChangePassword.jsx
-import { useState, useContext, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import Swal from "sweetalert2";
+import { changePassword as changePasswordAction, logout as logoutAction } from "../redux/authSlice";
 
 export default function ChangePassword() {
-  const { changePassword, logout } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const email = useSelector((state) => state.auth.currentUserEmail);
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
-  const navigate = useNavigate();
-  const email = localStorage.getItem("currentUserEmail");
 
   const handleSubmit = useCallback(
-    async (e) => {
+    (e) => {
       e.preventDefault();
-      if (!email) return;
-      const ok = await changePassword(email, oldPass, newPass);
-      if (ok) {
-        logout();
-        navigate("/login");
+      if (!email || !oldPass || !newPass) {
+        Swal.fire({ icon: "error", title: "All fields are required" });
+        return;
       }
+
+      dispatch(changePasswordAction({ email, oldPassword: oldPass, newPassword: newPass }));
+
+      Swal.fire({ icon: "success", title: "Password changed! Logging out...", timer: 1500, showConfirmButton: false });
+      dispatch(logoutAction());
+      navigate("/auth");
+
+      setOldPass("");
+      setNewPass("");
     },
-    [email, oldPass, newPass, changePassword, logout, navigate]
+    [email, oldPass, newPass, dispatch, navigate]
   );
 
   return (
@@ -40,7 +48,9 @@ export default function ChangePassword() {
             value={newPass}
             onChange={(e) => setNewPass(e.target.value)}
           />
-          <button type="submit" className="btn-primary">Update Password</button>
+          <button type="submit" className="btn-primary">
+            Update Password
+          </button>
         </form>
       </div>
     </div>

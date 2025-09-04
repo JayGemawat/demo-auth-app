@@ -1,8 +1,11 @@
 // src/components/ProductModal.jsx
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
+import { addProduct as addProductAction } from "../redux/dataSlice";
 
-export default function ProductModal({ category, onClose, onSave }) {
+export default function ProductModal({ category, onClose }) {
+  const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [colors, setColors] = useState([]);
@@ -33,6 +36,7 @@ export default function ProductModal({ category, onClose, onSave }) {
       Swal.fire({ icon: "error", title: "Fill all required fields" });
       return;
     }
+
     const product = {
       id: Date.now(),
       categoryId: category.id,
@@ -42,14 +46,16 @@ export default function ProductModal({ category, onClose, onSave }) {
       colors,
       tags,
     };
-    onSave(product);
+
+    dispatch(addProductAction({ categoryId: category.id, product }));
+
     onClose();
     Swal.fire({ icon: "success", title: "Product added" });
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Add Product to {category.name}</h2>
         <form onSubmit={handleSubmit}>
           <input

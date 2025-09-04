@@ -1,30 +1,33 @@
 // src/components/Layout.jsx
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
+import { logout as logoutAction } from "../redux/authSlice";
 
 export default function Layout() {
-  const { role, logout } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const { role } = useSelector((state) => state.auth); // Redux state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Extract page name from pathname for title
+  // Dynamic page title
   const pathTitle = (() => {
     const path = location.pathname.split("/")[1] || "dashboard";
     return path.charAt(0).toUpperCase() + path.slice(1);
   })();
 
-  // Lock body scroll on mobile when sidebar is open
+  // Lock body scroll on mobile
   useEffect(() => {
-    if (sidebarOpen && window.innerWidth < 768) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow =
+      sidebarOpen && window.innerWidth < 768 ? "hidden" : "";
   }, [sidebarOpen]);
 
-  // Handle logout with SweetAlert confirmation
+  // Close sidebar on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location]);
+
   const handleLogout = async () => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -37,7 +40,7 @@ export default function Layout() {
     });
 
     if (result.isConfirmed) {
-      logout();
+      dispatch(logoutAction()); // Redux logout
       Swal.fire({
         icon: "success",
         title: "Logged out successfully",
@@ -47,26 +50,29 @@ export default function Layout() {
     }
   };
 
+  const menuItems = [
+    { name: "Dashboard", path: "/dashboard", roles: ["Admin", "User"] },
+    { name: "Categories", path: "/categories", roles: ["Admin"] },
+    { name: "Products", path: "/products", roles: ["Admin", "User"] },
+    { name: "Change Password", path: "/change-password", roles: ["Admin", "User"] },
+  ];
+
   return (
     <div className="dashboard">
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
         <h2>My Demo App</h2>
         <ul>
-          <li>
-            <NavLink to="/dashboard">Dashboard</NavLink>
-          </li>
-          {role === "Admin" && (
-            <li>
-              <NavLink to="/categories">Categories</NavLink>
-            </li>
+          {menuItems.map(
+            (item) =>
+              item.roles.includes(role) && (
+                <li key={item.path}>
+                  <NavLink to={item.path} onClick={() => setSidebarOpen(false)}>
+                    {item.name}
+                  </NavLink>
+                </li>
+              )
           )}
-          <li>
-            <NavLink to="/products">Products</NavLink>
-          </li>
-          <li>
-            <NavLink to="/change-password">Change Password</NavLink>
-          </li>
         </ul>
         <button onClick={handleLogout} className="btn-danger">
           Logout

@@ -1,0 +1,29 @@
+// src/redux/dataSlice.js
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  categories: [],
+  products: [],
+};
+
+const dataSlice = createSlice({
+  name: "data",
+  initialState,
+  reducers: {
+    addCategory: (state, action) => {
+      state.categories.push(action.payload);
+    },
+    removeCategory: (state, action) => {
+      state.categories = state.categories.filter(c => c.id !== action.payload);
+    },
+    addProduct: (state, action) => {
+      const { categoryId, product } = action.payload;
+      state.products.push(product);
+      const cat = state.categories.find(c => c.id === categoryId);
+      if (cat) cat.productCount += 1;
+    },
+  },
+});
+
+export const { addCategory, removeCategory, addProduct } = dataSlice.actions;
+export default dataSlice.reducer;
