@@ -29,3 +29,19 @@ A full-stack React authentication app with login, registration, and password res
 
 ## Project Structure
 
+src/
+├─ components/
+│ └─ Layout.jsx
+├─ context/
+│ └─ AuthContext.jsx
+├─ pages/
+│ ├─ AuthPage.jsx
+│ ├─ ForgotPassword.jsx
+│ ├─ ResetPassword.jsx
+│ ├─ ChangePassword.jsx
+│ ├─ Dashboard.jsx
+│ ├─ Products.jsx
+│ └─ Categories.jsx
+├─ App.jsx
+├─ index.jsx
+└─ styles.css
