@@ -53,6 +53,7 @@ src/
 
 
    git clone https://github.com/JayGemawat/demo-auth-app.git
+   
    cd demo-auth-app
 
 *2. Install dependencies:*
