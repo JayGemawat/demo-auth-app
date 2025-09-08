@@ -355,10 +355,6 @@ tbody tr:hover{ background: #eaf3ff; }
   button{ background:#f9f9f9; color:#111; }
 }
 
-
-
-
-/*This is for 3D flip effect on start page that is for login or Register*/
 /* ================================
    Auth Page Flip Card
    ================================ */
@@ -379,6 +375,10 @@ tbody tr:hover{ background: #eaf3ff; }
   perspective: 1000px;
   position: relative;
   min-height: 400px;
+
+  /* Added for 3D flip */
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease-in-out;
 }
 
 /* Card Faces */
@@ -395,10 +395,10 @@ tbody tr:hover{ background: #eaf3ff; }
   padding: 32px 28px;
   box-shadow: var(--shadow);
   backface-visibility: hidden;
-  transition: transform 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  transition: transform 0.6s ease-in-out;
 }
 
 /* Login */
@@ -467,13 +467,10 @@ tbody tr:hover{ background: #eaf3ff; }
     margin-left: 0 !important;
   }
 
-
   .sidebar.collapsed {
     width: 0px; /* collapsed width */
     overflow: hidden;
   }
-
-
 
   .sidebar ul {
     list-style: none;
@@ -493,3 +490,6 @@ tbody tr:hover{ background: #eaf3ff; }
     display: block;
   }
 }
+/* ================================
+   End of Styles
+   ================================ */

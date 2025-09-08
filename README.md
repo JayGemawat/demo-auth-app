@@ -45,3 +45,11 @@ A full-stack React authentication app with login, registration, and password res
 # Install routing support
 
 npm install react-router-dom
+
+
+
+# To Run Main
+npm run dev -- --host 0.0.0.0
+
+# To run Server
+npx json-server --watch db.json --port 5000

@@ -14,7 +14,7 @@ export default function AuthPage() {
   const token = useSelector((state) => state.auth.token);
   const navigate = useNavigate();
 
-  // --- Separate state per view ---
+  // --- State ---
   const [view, setView] = useState("login"); // "login" | "register" | "forgot"
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ email: "", password: "" });
@@ -105,99 +105,91 @@ export default function AuthPage() {
   return (
     <div className="auth-container">
       <div className={`auth-card ${view}`}>
-
         {/* Login Form */}
-        {view === "login" && (
-          <div className="auth-front">
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={loginData.email}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, email: e.target.value })
-                }
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={loginData.password}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, password: e.target.value })
-                }
-              />
-              <button type="submit" className="btn-primary">
-                Login
-              </button>
-            </form>
-            <div className="auth-links">
-              <button type="button" onClick={() => setView("register")}>
-                Register
-              </button>
-              <button type="button" onClick={() => setView("forgot")}>
-                Forgot Password?
-              </button>
-            </div>
+        <div className="auth-front">
+          <h2>Login</h2>
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={(e) =>
+                setLoginData({ ...loginData, email: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginData.password}
+              onChange={(e) =>
+                setLoginData({ ...loginData, password: e.target.value })
+              }
+            />
+            <button type="submit" className="btn-primary">
+              Login
+            </button>
+          </form>
+          <div className="auth-links">
+            <button type="button" onClick={() => setView("register")}>
+              Register
+            </button>
+            <button type="button" onClick={() => setView("forgot")}>
+              Forgot Password?
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Register Form */}
-        {view === "register" && (
-          <div className="auth-back">
-            <h2>Register</h2>
-            <form onSubmit={handleRegister}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={registerData.email}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, email: e.target.value })
-                }
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={registerData.password}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, password: e.target.value })
-                }
-              />
-              <button type="submit" className="btn-primary">
-                Register
-              </button>
-            </form>
-            <div className="auth-links">
-              <button type="button" onClick={() => setView("login")}>
-                Back to Login
-              </button>
-            </div>
+        <div className="auth-back">
+          <h2>Register</h2>
+          <form onSubmit={handleRegister}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={registerData.email}
+              onChange={(e) =>
+                setRegisterData({ ...registerData, email: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={registerData.password}
+              onChange={(e) =>
+                setRegisterData({ ...registerData, password: e.target.value })
+              }
+            />
+            <button type="submit" className="btn-primary">
+              Register
+            </button>
+          </form>
+          <div className="auth-links">
+            <button type="button" onClick={() => setView("login")}>
+              Back to Login
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Forgot Password Form */}
-        {view === "forgot" && (
-          <div className="auth-forgot">
-            <h2>Forgot Password</h2>
-            <form onSubmit={handleForgotPassword}>
-              <input
-                type="email"
-                placeholder="Enter registered email"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-              />
-              <button type="submit" className="btn-success">
-                Send OTP
-              </button>
-            </form>
-            <div className="auth-links">
-              <button type="button" onClick={() => setView("login")}>
-                Back to Login
-              </button>
-            </div>
+        <div className="auth-forgot">
+          <h2>Forgot Password</h2>
+          <form onSubmit={handleForgotPassword}>
+            <input
+              type="email"
+              placeholder="Enter registered email"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+            />
+            <button type="submit" className="btn-success">
+              Send OTP
+            </button>
+          </form>
+          <div className="auth-links">
+            <button type="button" onClick={() => setView("login")}>
+              Back to Login
+            </button>
           </div>
-        )}
-
+        </div>
       </div>
     </div>
   );
