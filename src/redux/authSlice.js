@@ -21,13 +21,15 @@ export const loginAsync = createAsyncThunk(
 // ---------------- REGISTER ----------------
 export const registerAsync = createAsyncThunk(
   "auth/registerAsync",
-  async ({ email, password }, { getState }) => {
+  async ({ email, password }, { getState, rejectWithValue }) => {
     const users = getState().auth.users;
-    if (users.find(u => u.email === email)) {
-      throw new Error("Email already registered");
+
+    if (users.some(u => u.email === email)) {
+      return rejectWithValue("Email already registered");
     }
 
-    const newUser = { id: Date.now(), email, password, role: "User" };
+    const maxId = users.reduce((max, u) => Math.max(max, u.id), 0);
+    const newUser = { id: maxId + 1, email, password, role: "User" };
 
     // POST to json-server
     await fetch("http://localhost:5000/users", {
@@ -36,7 +38,7 @@ export const registerAsync = createAsyncThunk(
       body: JSON.stringify(newUser),
     });
 
-    // Update localStorage safely
+    // Update localStorage
     const updatedUsers = [...users, newUser];
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     localStorage.setItem("token", "dummy-token");
@@ -70,10 +72,20 @@ export const resetPasswordAsync = createAsyncThunk(
   "auth/resetPasswordAsync",
   async ({ email, newPassword }, { getState }) => {
     const users = getState().auth.users;
+    const userToUpdate = users.find(u => u.email === email);
+    if (!userToUpdate) throw new Error("User not found");
+
+    // PATCH to json-server
+    await fetch(`http://localhost:5000/users/${userToUpdate.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: newPassword }),
+    });
+
+    // Update localStorage
     const updatedUsers = users.map(u =>
       u.email === email ? { ...u, password: newPassword } : u
     );
-
     localStorage.setItem("users", JSON.stringify(updatedUsers));
 
     const store = JSON.parse(localStorage.getItem("otpStore") || "{}");
@@ -85,17 +97,26 @@ export const resetPasswordAsync = createAsyncThunk(
 );
 
 // ---------------- CHANGE PASSWORD ----------------
-export const changePassword = createAsyncThunk(
-  "auth/changePassword",
+export const changePasswordAsync = createAsyncThunk(
+  "auth/changePasswordAsync",
   async ({ email, oldPassword, newPassword }, { getState }) => {
     const users = getState().auth.users;
-    const userExists = users.find(u => u.email === email && u.password === oldPassword);
-    if (!userExists) throw new Error("Old password is incorrect");
+    const user = users.find(u => u.email === email && u.password === oldPassword);
+    if (!user) throw new Error("Old password is incorrect");
 
+    // PATCH to json-server
+    await fetch(`http://localhost:5000/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: newPassword }),
+    });
+
+    // Update localStorage
     const updatedUsers = users.map(u =>
       u.email === email ? { ...u, password: newPassword } : u
     );
     localStorage.setItem("users", JSON.stringify(updatedUsers));
+
     return true;
   }
 );
@@ -109,9 +130,10 @@ const authSlice = createSlice({
     currentUserEmail: localStorage.getItem("currentUserEmail") || null,
     users: JSON.parse(localStorage.getItem("users") || "null") || [
       { id: 1, email: "admin@gmail.com", password: "123456", role: "Admin" },
-      { id: 2, email: "user@gmail.com", password: "123456", role: "User" },
+      { id: 2, email: "user@gmail.com", password: "123456", role: "User" }
     ],
     otp: null,
+    error: null,
   },
   reducers: {
     logout: (state) => {
@@ -121,6 +143,9 @@ const authSlice = createSlice({
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("currentUserEmail");
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -134,23 +159,23 @@ const authSlice = createSlice({
         state.token = "dummy-token";
         state.role = action.payload.role;
         state.currentUserEmail = action.payload.email;
-
-        // ✅ Safely update users array
-        state.users = [...state.users, {
-          id: action.payload.id,
-          email: action.payload.email,
-          password: action.payload.password,
-          role: action.payload.role
-        }];
+        state.users.push(action.payload);
+        state.error = null;
+      })
+      .addCase(registerAsync.rejected, (state, action) => {
+        state.error = action.payload;
       })
       .addCase(requestOtpAsync.fulfilled, (state, action) => {
         state.otp = action.payload;
       })
       .addCase(resetPasswordAsync.fulfilled, (state) => {
         state.otp = null;
+      })
+      .addCase(changePasswordAsync.fulfilled, () => {
+        // Password changed successfully
       });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

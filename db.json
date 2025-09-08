@@ -1,62 +1,62 @@
 {
   "users": [
     {
-      "id": "1",
+      "id": 1,
       "email": "admin@gmail.com",
       "password": "123456",
       "role": "Admin"
     },
     {
-      "id": "2",
+      "id": 2,
       "email": "user@gmail.com",
       "password": "123456",
       "role": "User"
     },
     {
-      "id": 1757309876572,
+      "id": 3,
       "email": "dharmik@gmail.com",
       "password": "123456",
       "role": "User"
     },
     {
-      "id": 1757310140698,
+      "id": 4,
       "email": "j@gmail.com",
       "password": "123456",
       "role": "User"
     },
     {
-      "id": 1757310264196,
-      "email": "dharmik@gmail.com",
+      "id": 1757310264198,
+      "email": "jaypatni@gmail.com",
       "password": "123456",
       "role": "User"
     }
   ],
   "categories": [
     {
-      "id": "1",
+      "id": 1,
       "name": "Electronics",
       "productCount": 1
     },
     {
-      "id": "2",
+      "id": 2,
       "name": "Clothing",
       "productCount": 0
     },
     {
-      "id": "3",
+      "id": 3,
       "name": "Books",
       "productCount": 0
     },
     {
-      "id": "04b8",
+      "id": 4,
       "name": "Furniture",
       "productCount": 0
     }
   ],
   "products": [
     {
-      "id": "f381",
-      "categoryId": "1",
+      "id": 1,
+      "categoryId": 1,
       "categoryName": "Electronics",
       "name": "iPhone 13",
       "price": 65000,
@@ -66,7 +66,9 @@
       "tags": []
     },
     {
-      "id": "8466",
+      "id": 2,
+      "categoryId": 1,
+      "categoryName": "Electronics",
       "name": "iPhone 13 Pro",
       "price": 80000,
       "colors": [
@@ -74,23 +76,25 @@
       ],
       "tags": [
         "Titanium"
-      ],
-      "categoryName": ""
+      ]
     },
     {
-      "id": "3efb",
+      "id": 3,
+      "categoryId": 1,
+      "categoryName": "Electronics",
       "name": "iPhone 15 Pro",
       "price": 100000,
       "colors": [
         "Blue"
       ],
       "tags": [
-        "refurbised"
-      ],
-      "categoryName": "Electronics"
+        "refurbished"
+      ]
     },
     {
-      "id": "2d04",
+      "id": 4,
+      "categoryId": 2,
+      "categoryName": "Clothing",
       "name": "Zara Printed Shirt",
       "price": 999,
       "colors": [
@@ -98,20 +102,20 @@
       ],
       "tags": [
         "cotton"
-      ],
-      "categoryName": "Clothing"
+      ]
     },
     {
-      "id": "4283",
-      "name": "samsung charger",
+      "id": 5,
+      "categoryId": 1,
+      "categoryName": "Electronics",
+      "name": "Samsung Charger",
       "price": 1999,
       "colors": [
-        "white"
+        "White"
       ],
       "tags": [
         "brand new"
-      ],
-      "categoryName": "Electronics"
+      ]
     }
   ]
 }

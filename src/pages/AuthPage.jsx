@@ -7,11 +7,13 @@ import {
   loginAsync,
   registerAsync,
   requestOtpAsync,
+  clearError,
 } from "../redux/authSlice";
 
 export default function AuthPage() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
+  const error = useSelector((state) => state.auth.error);
   const navigate = useNavigate();
 
   // --- State ---
@@ -24,6 +26,14 @@ export default function AuthPage() {
   useEffect(() => {
     if (token) navigate("/dashboard");
   }, [token, navigate]);
+
+  // Show error via SweetAlert when registration fails
+  useEffect(() => {
+    if (error) {
+      Swal.fire({ icon: "error", title: error });
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
 
   // --- LOGIN ---
   const handleLogin = useCallback(

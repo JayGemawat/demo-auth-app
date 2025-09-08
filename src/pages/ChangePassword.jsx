@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { changePassword as changePasswordAction, logout as logoutAction } from "../redux/authSlice";
+import { changePasswordAsync as changePasswordAction, logout as logoutAction } from "../redux/authSlice";
 
 export default function ChangePassword() {
   const dispatch = useDispatch();
