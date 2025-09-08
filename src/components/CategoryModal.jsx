@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addCategory as addCategoryAction } from "../redux/dataSlice";
+import { addCategoryAsync } from "../redux/dataSlice";
 
 export default function CategoryModal({ onClose }) {
   const [name, setName] = useState("");
   const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return alert("Category name is required");
 
-    const newCategory = { id: Date.now(), name: name.trim(), productCount: 0 };
-    dispatch(addCategoryAction(newCategory)); // dispatch to Redux
+    await dispatch(addCategoryAsync({ name: name.trim(), productCount: 0 }));
+
     onClose();
   };
 

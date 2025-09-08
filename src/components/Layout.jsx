@@ -61,6 +61,7 @@ export default function Layout() {
     <div className="dashboard">
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+
         <h2>My Demo App</h2>
         <ul>
           {menuItems.map(

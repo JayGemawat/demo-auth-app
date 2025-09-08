@@ -1,8 +1,7 @@
-// src/components/ProductModal.jsx
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
-import { addProduct as addProductAction } from "../redux/dataSlice";
+import { addProductAsync } from "../redux/dataSlice";
 
 export default function ProductModal({ category, onClose }) {
   const dispatch = useDispatch();
@@ -30,7 +29,7 @@ export default function ProductModal({ category, onClose }) {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !price || colors.length === 0) {
       Swal.fire({ icon: "error", title: "Fill all required fields" });
@@ -38,7 +37,6 @@ export default function ProductModal({ category, onClose }) {
     }
 
     const product = {
-      id: Date.now(),
       categoryId: category.id,
       categoryName: category.name,
       name,
@@ -47,7 +45,7 @@ export default function ProductModal({ category, onClose }) {
       tags,
     };
 
-    dispatch(addProductAction({ categoryId: category.id, product }));
+    await dispatch(addProductAsync(product));
 
     onClose();
     Swal.fire({ icon: "success", title: "Product added" });
@@ -76,8 +74,7 @@ export default function ProductModal({ category, onClose }) {
           <div className="checkbox-group">
             {["Black", "White", "Yellow", "Green", "Blue", "Red"].map((c) => (
               <label key={c}>
-                <input type="checkbox" value={c} onChange={handleColorChange} />{" "}
-                {c}
+                <input type="checkbox" value={c} onChange={handleColorChange} /> {c}
               </label>
             ))}
           </div>
@@ -101,9 +98,7 @@ export default function ProductModal({ category, onClose }) {
 
           <div className="actions">
             <button type="submit">Save</button>
-            <button type="button" onClick={onClose} className="cancel">
-              Cancel
-            </button>
+            <button type="button" onClick={onClose} className="cancel">Cancel</button>
           </div>
         </form>
       </div>

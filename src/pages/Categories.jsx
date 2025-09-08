@@ -1,17 +1,23 @@
 // src/pages/Categories.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import ProductModal from "../components/ProductModal";
 import {
-  addCategory as addCategoryAction,
-  removeCategory as removeCategoryAction,
+  fetchCategories,
+  addCategoryAsync,
+  removeCategoryAsync,
 } from "../redux/dataSlice";
 
 export default function Categories() {
   const dispatch = useDispatch();
   const categories = useSelector((state) => state.data.categories);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // Load categories from db.json via Redux thunk
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   // Add a new category
   const handleAddCategory = async () => {
@@ -36,14 +42,23 @@ export default function Categories() {
     });
 
     if (name) {
-      const newCat = { id: Date.now(), name: name.trim(), productCount: 0 };
-      dispatch(addCategoryAction(newCat));
-      Swal.fire({
-        icon: "success",
-        title: "Category added!",
-        timer: 1200,
-        showConfirmButton: false,
-      });
+      try {
+        // Dispatch async thunk to save to db.json and Redux
+        await dispatch(addCategoryAsync({ name: name.trim(), productCount: 0 }));
+
+        Swal.fire({
+          icon: "success",
+          title: "Category added!",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      } catch (err) {
+        console.error("Error adding category:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Failed to add category",
+        });
+      }
     }
   };
 
@@ -56,14 +71,25 @@ export default function Categories() {
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
     });
+
     if (result.isConfirmed) {
-      dispatch(removeCategoryAction(cat.id));
-      Swal.fire({
-        icon: "success",
-        title: "Deleted!",
-        timer: 1200,
-        showConfirmButton: false,
-      });
+      try {
+        // Dispatch async thunk to remove from db.json and Redux
+        await dispatch(removeCategoryAsync(cat.id));
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      } catch (err) {
+        console.error("Error deleting category:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Failed to delete category",
+        });
+      }
     }
   };
 
@@ -78,6 +104,8 @@ export default function Categories() {
       </div>
 
       <div className="category-list">
+        {categories.length === 0 && <p>No categories yet.</p>}
+
         {categories.map((cat) => (
           <div key={cat.id} className="category-card">
             <h2>{cat.name}</h2>
@@ -100,7 +128,6 @@ export default function Categories() {
         ))}
       </div>
 
-      {/* Product Modal now uses Redux directly, no onSave prop */}
       {selectedCategory && (
         <ProductModal
           category={selectedCategory}

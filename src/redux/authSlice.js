@@ -1,7 +1,8 @@
+// src/redux/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Swal from "sweetalert2";
 
-// LOGIN
+// ---------------- LOGIN ----------------
 export const loginAsync = createAsyncThunk(
   "auth/loginAsync",
   async ({ email, password }, { getState }) => {
@@ -13,30 +14,40 @@ export const loginAsync = createAsyncThunk(
     localStorage.setItem("role", user.role);
     localStorage.setItem("currentUserEmail", user.email);
 
-    return { email: user.email, role: user.role };
+    return { email: user.email, role: user.role, id: user.id };
   }
 );
 
-// REGISTER
+// ---------------- REGISTER ----------------
 export const registerAsync = createAsyncThunk(
   "auth/registerAsync",
   async ({ email, password }, { getState }) => {
     const users = getState().auth.users;
-    const exists = users.find(u => u.email === email);
-    if (exists) throw new Error("Email already registered");
+    if (users.find(u => u.email === email)) {
+      throw new Error("Email already registered");
+    }
 
-    const newUser = { id: users.length + 1, email, password, role: "User" };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
+    const newUser = { id: Date.now(), email, password, role: "User" };
+
+    // POST to json-server
+    await fetch("http://localhost:5000/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser),
+    });
+
+    // Update localStorage safely
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
     localStorage.setItem("token", "dummy-token");
     localStorage.setItem("role", newUser.role);
     localStorage.setItem("currentUserEmail", newUser.email);
 
-    return { email: newUser.email, role: newUser.role };
+    return newUser;
   }
 );
 
-// REQUEST OTP
+// ---------------- REQUEST OTP ----------------
 export const requestOtpAsync = createAsyncThunk(
   "auth/requestOtpAsync",
   async (email, { getState }) => {
@@ -50,23 +61,21 @@ export const requestOtpAsync = createAsyncThunk(
     localStorage.setItem("otpStore", JSON.stringify(store));
 
     Swal.fire({ icon: "info", title: `Your OTP is ${otp}`, timer: 2000, showConfirmButton: true });
-
     return otp;
   }
 );
 
-// RESET PASSWORD
+// ---------------- RESET PASSWORD ----------------
 export const resetPasswordAsync = createAsyncThunk(
   "auth/resetPasswordAsync",
   async ({ email, newPassword }, { getState }) => {
     const users = getState().auth.users;
-    const user = users.find(u => u.email === email);
-    if (!user) throw new Error("User not found");
+    const updatedUsers = users.map(u =>
+      u.email === email ? { ...u, password: newPassword } : u
+    );
 
-    user.password = newPassword;
-    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-    // Clear OTP
     const store = JSON.parse(localStorage.getItem("otpStore") || "{}");
     delete store[email];
     localStorage.setItem("otpStore", JSON.stringify(store));
@@ -75,6 +84,23 @@ export const resetPasswordAsync = createAsyncThunk(
   }
 );
 
+// ---------------- CHANGE PASSWORD ----------------
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async ({ email, oldPassword, newPassword }, { getState }) => {
+    const users = getState().auth.users;
+    const userExists = users.find(u => u.email === email && u.password === oldPassword);
+    if (!userExists) throw new Error("Old password is incorrect");
+
+    const updatedUsers = users.map(u =>
+      u.email === email ? { ...u, password: newPassword } : u
+    );
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    return true;
+  }
+);
+
+// ---------------- SLICE ----------------
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -108,6 +134,14 @@ const authSlice = createSlice({
         state.token = "dummy-token";
         state.role = action.payload.role;
         state.currentUserEmail = action.payload.email;
+
+        // ✅ Safely update users array
+        state.users = [...state.users, {
+          id: action.payload.id,
+          email: action.payload.email,
+          password: action.payload.password,
+          role: action.payload.role
+        }];
       })
       .addCase(requestOtpAsync.fulfilled, (state, action) => {
         state.otp = action.payload;
@@ -120,14 +154,3 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
-export const changePassword = createAsyncThunk(
-  "auth/changePassword",
-  async ({ email, oldPassword, newPassword }, { getState }) => {
-    const users = getState().auth.users;
-    const user = users.find(u => u.email === email && u.password === oldPassword);
-    if (!user) throw new Error("Old password is incorrect");
-    user.password = newPassword;
-    localStorage.setItem("users", JSON.stringify(users));
-    return true;
-  }
-);

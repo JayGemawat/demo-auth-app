@@ -1,29 +1,130 @@
-// src/redux/dataSlice.js
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
-const initialState = {
-  categories: [],
-  products: [],
-};
+const API_URL = "http://localhost:5000"; // your json-server URL
+
+// Fetch categories
+export const fetchCategories = createAsyncThunk(
+  "data/fetchCategories",
+  async () => {
+    const res = await axios.get(`${API_URL}/categories`);
+    return res.data;
+  }
+);
+
+// Add category
+export const addCategoryAsync = createAsyncThunk(
+  "data/addCategory",
+  async (category) => {
+    const res = await axios.post(`${API_URL}/categories`, category);
+    return res.data;
+  }
+);
+
+// Remove category
+export const removeCategoryAsync = createAsyncThunk(
+  "data/removeCategory",
+  async (id) => {
+    await axios.delete(`${API_URL}/categories/${id}`);
+    return id;
+  }
+);
+
+// Fetch products
+export const fetchProducts = createAsyncThunk(
+  "data/fetchProducts",
+  async () => {
+    const res = await axios.get(`${API_URL}/products`);
+    return res.data;
+  }
+);
+
+// Add product
+export const addProductAsync = createAsyncThunk(
+  "data/addProduct",
+  async (product, { dispatch }) => {
+    const res = await axios.post(`${API_URL}/products`, product);
+
+    // Increment product count in category after adding product
+    if (product.categoryName) {
+      // Find category by name
+      const categoriesRes = await axios.get(`${API_URL}/categories`);
+      const category = categoriesRes.data.find(
+        (c) => c.name === product.categoryName
+      );
+
+      if (category) {
+        await axios.patch(`${API_URL}/categories/${category.id}`, {
+          productCount: (category.productCount || 0) + 1,
+        });
+        // Re-fetch categories to update Redux state
+        dispatch(fetchCategories());
+      }
+    }
+
+    return res.data;
+  }
+);
+
+// Remove product
+export const removeProductAsync = createAsyncThunk(
+  "data/removeProduct",
+  async (productId, { dispatch, getState }) => {
+    const state = getState();
+    const product = state.data.products.find((p) => p.id === productId);
+
+    if (product) {
+      // Decrement product count in category
+      const categoriesRes = await axios.get(`${API_URL}/categories`);
+      const category = categoriesRes.data.find(
+        (c) => c.name === product.categoryName
+      );
+
+      if (category) {
+        await axios.patch(`${API_URL}/categories/${category.id}`, {
+          productCount: Math.max((category.productCount || 1) - 1, 0),
+        });
+      }
+    }
+
+    await axios.delete(`${API_URL}/products/${productId}`);
+    dispatch(fetchCategories()); // Refresh categories after deletion
+    return productId;
+  }
+);
 
 const dataSlice = createSlice({
   name: "data",
-  initialState,
-  reducers: {
-    addCategory: (state, action) => {
-      state.categories.push(action.payload);
-    },
-    removeCategory: (state, action) => {
-      state.categories = state.categories.filter(c => c.id !== action.payload);
-    },
-    addProduct: (state, action) => {
-      const { categoryId, product } = action.payload;
-      state.products.push(product);
-      const cat = state.categories.find(c => c.id === categoryId);
-      if (cat) cat.productCount += 1;
-    },
+  initialState: {
+    categories: [],
+    products: [],
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    // Categories
+    builder
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories = action.payload;
+      })
+      .addCase(addCategoryAsync.fulfilled, (state, action) => {
+        state.categories.push(action.payload);
+      })
+      .addCase(removeCategoryAsync.fulfilled, (state, action) => {
+        state.categories = state.categories.filter((c) => c.id !== action.payload);
+      });
+
+    // Products
+    builder
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.products = action.payload;
+      })
+      .addCase(addProductAsync.fulfilled, (state, action) => {
+        state.products.push(action.payload);
+      })
+      .addCase(removeProductAsync.fulfilled, (state, action) => {
+        state.products = state.products.filter((p) => p.id !== action.payload);
+      });
   },
 });
 
-export const { addCategory, removeCategory, addProduct } = dataSlice.actions;
 export default dataSlice.reducer;

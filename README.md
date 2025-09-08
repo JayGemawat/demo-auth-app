@@ -42,12 +42,6 @@ A full-stack React authentication app with login, registration, and password res
 
    npm install
 
-*3. Start development server:(for local server)*
+# Install routing support
 
-   npm start
-
-
-
-*4. Deployment*
-
-The project can be deployed easily on free hosting services like Vercel, Netlify, or Render.
+npm install react-router-dom
