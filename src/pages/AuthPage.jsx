@@ -61,56 +61,65 @@ export default function AuthPage() {
     [loginData, dispatch, navigate]
   );
 
+ 
   // --- REGISTER ---
-  const handleRegister = useCallback(
-    async (e) => {
-      e.preventDefault();
-      const { email, password } = registerData;
-      if (!email || !password) {
-        Swal.fire({ icon: "error", title: "All fields required" });
-        return;
-      }
+const handleRegister = useCallback(
+  async (e) => {
+    e.preventDefault();
+    const { email, password } = registerData;
+    if (!email || !password) {
+      Swal.fire({ icon: "error", title: "All fields required" });
+      return;
+    }
 
-      try {
-        await dispatch(registerAsync({ email, password })).unwrap();
-        Swal.fire({
-          icon: "success",
-          title: "Registered successfully",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        setView("login");
-        setRegisterData({ email: "", password: "" });
-      } catch (err) {
-        Swal.fire({ icon: "error", title: err.message || "Registration failed" });
-      }
-    },
-    [registerData, dispatch]
-  );
+    try {
+      await dispatch(registerAsync({ email, password })).unwrap();
+      Swal.fire({
+        icon: "success",
+        title: "Registered successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      setView("login");
+      setRegisterData({ email: "", password: "" });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: err || "Registration failed",  // ✅ catch rejectWithValue directly
+      });
+    }
+  },
+  [registerData, dispatch]
+);
 
-  // --- FORGOT PASSWORD ---
+// --- FORGOT PASSWORD ---
   const handleForgotPassword = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!forgotEmail) {
-        Swal.fire({ icon: "error", title: "Email required" });
-        return;
-      }
+  async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      Swal.fire({ icon: "error", title: "Email required" });
+      return;
+    }
 
-      try {
-        const otp = await dispatch(requestOtpAsync(forgotEmail)).unwrap();
-        Swal.fire({
-          icon: "success",
-          title: "OTP sent!",
-          text: `Your OTP is: ${otp}`,
-        });
-        navigate(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
-      } catch (err) {
-        Swal.fire({ icon: "error", title: err.message || "Failed to send OTP" });
-      }
-    },
-    [forgotEmail, dispatch, navigate]
-  );
+    try {
+      const otp = await dispatch(requestOtpAsync(forgotEmail)).unwrap();
+      Swal.fire({
+        icon: "success",
+        title: "OTP sent!",
+        text: `Your OTP is: ${otp}`,
+      });
+      navigate(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
+    } catch (err) {
+  Swal.fire({ 
+    icon: "error", 
+    title: typeof err === "string" ? err : err.message || "Failed to send OTP" 
+  });
+}
+
+  },
+  [forgotEmail, dispatch, navigate]
+);
+
 
   return (
     <div className="auth-container">

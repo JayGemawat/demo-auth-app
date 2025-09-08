@@ -21,8 +21,10 @@ export const loginAsync = createAsyncThunk(
 // ---------------- REGISTER ----------------
 export const registerAsync = createAsyncThunk(
   "auth/registerAsync",
-  async ({ email, password }, { getState, rejectWithValue }) => {
-    const users = getState().auth.users;
+  async ({ email, password }, { rejectWithValue }) => {
+    // Always fetch latest users from db.json
+    const response = await fetch("http://localhost:5000/users");
+    const users = await response.json();
 
     if (users.some(u => u.email === email)) {
       return rejectWithValue("Email already registered");
@@ -52,8 +54,11 @@ export const registerAsync = createAsyncThunk(
 // ---------------- REQUEST OTP ----------------
 export const requestOtpAsync = createAsyncThunk(
   "auth/requestOtpAsync",
-  async (email, { getState }) => {
-    const users = getState().auth.users;
+  async (email) => {
+    // Always fetch latest users from db.json
+    const response = await fetch("http://localhost:5000/users");
+    const users = await response.json();
+
     const user = users.find(u => u.email === email);
     if (!user) throw new Error("Email not found");
 
@@ -62,7 +67,13 @@ export const requestOtpAsync = createAsyncThunk(
     store[email] = { code: String(otp), expiresAt: Date.now() + 10 * 60 * 1000 };
     localStorage.setItem("otpStore", JSON.stringify(store));
 
-    Swal.fire({ icon: "info", title: `Your OTP is ${otp}`, timer: 2000, showConfirmButton: true });
+    Swal.fire({
+      icon: "info",
+      title: `Your OTP is ${otp}`,
+      timer: 2000,
+      showConfirmButton: true
+    });
+
     return otp;
   }
 );
